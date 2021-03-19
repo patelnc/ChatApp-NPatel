@@ -1,68 +1,82 @@
 const Order = require("./Order");
 
 const OrderState = Object.freeze({
-    WELCOMING:   Symbol("welcoming"),
-    SIZE:   Symbol("size"),
-    TOPPINGS:   Symbol("toppings"),
-    DRINKS:  Symbol("drinks"),
-    PAYMENT: Symbol("payment")
+  WELCOMING: Symbol("welcoming"),
+  SIZE: Symbol("size"),
+  TOPPINGS: Symbol("toppings"),
+  DRINKS: Symbol("drinks"),
+  PAYMENT: Symbol("payment")
 });
 
-module.exports = class ShwarmaOrder extends Order{
-    constructor(sNumber, sUrl){
-        super(sNumber, sUrl);
-        this.stateCur = OrderState.WELCOMING;
-        this.sSize = "";
-        this.sToppings = "";
-        this.sDrinks = "";
-        this.sItem = "shawarama";
-    }
-    handleInput(sInput){
-        let aReturn = [];
-        switch(this.stateCur){
-            case OrderState.WELCOMING:
-                this.stateCur = OrderState.SIZE;
-                aReturn.push("Welcome to Richard's Shawarma.");
-                aReturn.push("What size would you like?");
-                break;
-            case OrderState.SIZE:
-                this.stateCur = OrderState.TOPPINGS
-                this.sSize = sInput;
-                aReturn.push("What toppings would you like?");
-                break;
-            case OrderState.TOPPINGS:
-                this.stateCur = OrderState.DRINKS
-                this.sToppings = sInput;
-                aReturn.push("Would you like drinks with that?");
-                break;
-            case OrderState.DRINKS:
-                this.stateCur = OrderState.PAYMENT;
-                this.nOrder = 15;
-                if(sInput.toLowerCase() != "no"){
-                    this.sDrinks = sInput;
-                }
-                aReturn.push("Thank-you for your order of");
-                aReturn.push(`${this.sSize} ${this.sItem} with ${this.sToppings}`);
-                if(this.sDrinks){
-                    aReturn.push(this.sDrinks);
-                }
-                aReturn.push(`Please pay for your order here`);
-                aReturn.push(`${this.sUrl}/payment/${this.sNumber}/`);
-                break;
-            case OrderState.PAYMENT:
-                console.log(sInput);
-                this.isDone(true);
-                let d = new Date();
-                d.setMinutes(d.getMinutes() + 20);
-                aReturn.push(`Your order will be delivered at ${d.toTimeString()}`);
-                break;
+module.exports = class ShwarmaOrder extends Order {
+  constructor(sNumber, sUrl) {
+    super(sNumber, sUrl);
+    this.stateCur = OrderState.WELCOMING;
+    this.sSize = "";
+    this.sToppings = "";
+    this.sDrinks = "";
+    this.sItem = "shawarama";
+  }
+  handleInput(sInput) {
+    let aReturn = [];
+    switch (this.stateCur) {
+      case OrderState.WELCOMING:
+        this.stateCur = OrderState.SIZE;
+        aReturn.push("Welcome to NP's Shawarma.");
+        aReturn.push("What size would you like?");
+        break;
+      case OrderState.SIZE:
+        if (sInput.toLowerCase() == "small" ||
+          sInput.toLowerCase() == "large") {
+          this.stateCur = OrderState.TOPPINGS
+          this.sSize = sInput;
+          aReturn.push("What toppings would you like?We have Onion, Pickle, Cucumber, Parsley");
+        } else {
+          aReturn.push("Please enter LARGE or SMALL")
         }
-        return aReturn;
+        break;
+      case OrderState.TOPPINGS:
+        if (sInput.toLowerCase() == "fish" ||
+          sInput.toLowerCase() == "cheese" ||
+          sInput.toLowerCase() == "tofu" ||
+          sInput.toLowerCase() == "Beans"
+        ) {
+          this.stateCur = OrderState.DRINKS
+          this.sToppings = sInput;
+          aReturn.push("Would you like drinks with that?");
+        } else {
+          aReturn.push("Please enter any one Protein 'FISH' 'CHEESE' 'TOFU' or 'BEANS'")
+        }
+        break;
+      case OrderState.DRINKS:
+        this.stateCur = OrderState.PAYMENT;
+        this.nOrder = 15;
+        if (sInput.toLowerCase() != "no") {
+          this.sDrinks = sInput;
+        }
+        aReturn.push("Thank-you for your order of Shawarma");
+        aReturn.push(`${this.sSize} ${this.sItem} with ${this.sToppings}`);
+        if (this.sDrinks) {
+          aReturn.push(this.sDrinks);
+        }
+
+        aReturn.push(`Please pay for your order here`);
+        aReturn.push(`${this.sUrl}/payment/${this.sNumber}/`);
+        break;
+      case OrderState.PAYMENT:
+        console.log(sInput);
+        this.isDone(true);
+        let d = new Date();
+        d.setMinutes(d.getMinutes() + 20);
+        aReturn.push(`Your order will be delivered at ${d.toTimeString()}`);
+        break;
     }
-    renderForm(){
-      // your client id should be kept private
-      const sClientID = process.env.SB_CLIENT_ID || 'put your client id here for testing ... Make sure that you delete it before committing'
-      return(`
+    return aReturn;
+  }
+  renderForm() {
+    // your client id should be kept private
+    const sClientID = process.env.SB_CLIENT_ID || 'put your client id here for testing ... Make sure that you delete it before committing'
+    return (`
       <!DOCTYPE html>
   
       <head>
@@ -108,6 +122,6 @@ module.exports = class ShwarmaOrder extends Order{
       </body>
           
       `);
-  
-    }
+
+  }
 }
